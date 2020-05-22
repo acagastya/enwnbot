@@ -1,0 +1,8 @@
+{
+  "dependencies": {
+    "irc": "^0.5.2"
+  },
+  "scripts": {
+    "start": "node irc.js"
+  }
+}
