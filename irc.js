@@ -1,8 +1,10 @@
 const irc = require('irc');
+const MWBot = require('mwbot');
 
 const {
   admins,
   botName,
+  botPass,
   channels,
   maintainers,
   report,
@@ -16,11 +18,33 @@ const {
   getFullLink,
   getFullTemplate,
   urlShortener,
+  urlShortener1,
 } = require('./utils');
 
 const client = new irc.Client(server, botName, {
   channels,
 });
+
+let bot = new MWBot();
+const globalErr = {};
+(async function () {
+  try {
+    await bot.login({
+      username: 'Enwnbot',
+      password: botPass,
+      apiUrl: 'https://meta.wikimedia.org/w/api.php',
+    });
+    console.log('Ready to receive inputs...');
+    channels.forEach((channel) =>
+      client.say(channel, 'Ready to receive inputs...')
+    );
+  } catch (error) {
+    channels.forEach((channel) =>
+      client.say(channel, 'Error occurred.  Using fallback method.')
+    );
+    globalErr.error = error;
+  }
+})();
 
 function pm(sender, msg) {
   client.say(sender, 'I am a bot.');
@@ -59,7 +83,12 @@ async function announceRQ(sender, channel) {
 }
 
 async function sayShortUrls(urlList, channel) {
-  const shortUrls = await Promise.all(urlList.map(urlShortener));
+  let shortUrls;
+  if (globalErr.error) {
+    shortUrls = await Promise.all(urlList.map(urlShortener1));
+  } else {
+    shortUrls = await Promise.all(urlList.map((url) => urlShortener(url, bot)));
+  }
   shortUrls.forEach(({ url, err }) => {
     if (!err) client.say(channel, url);
   });

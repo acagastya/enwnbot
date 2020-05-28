@@ -1,6 +1,7 @@
 const config = {
   admins: ['jdoe'],
   botName: 'linkBOT',
+  botPass: 'botPass',
   channels: ['#foo', '##bar'],
   maintainers: ['ssmith'],
   report: '!ADMIN',

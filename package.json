@@ -1,6 +1,7 @@
 {
   "dependencies": {
     "irc": "^0.5.2",
+    "mwbot": "^1.0.10",
     "node-fetch": "^2.6.0",
     "tinyurl": "^1.1.5"
   },
