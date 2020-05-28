@@ -1,4 +1,5 @@
 const irc = require('irc');
+const fetch = require('node-fetch');
 
 const {
   admins,
@@ -6,7 +7,9 @@ const {
   channels,
   maintainers,
   report,
+  RQAPI,
   server,
+  shortURL,
   URL,
 } = require('./config');
 
@@ -49,9 +52,66 @@ function handleTemplate(template, channel) {
   client.say(channel, `${URL}Template:${word}`);
 }
 
+async function fetchData(URI) {
+  const res = {};
+  try {
+    const data = await fetch(URI);
+    const parsed = await data.json();
+    res.list = parsed.query.categorymembers;
+  } catch (error) {
+    res.error = true;
+  }
+  return res;
+}
+
+async function urlShortener(URI) {
+  const req = `${shortURL}${URI}`;
+  const res = {};
+  try {
+    const data = await fetch(req, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+    });
+    const parsed = await data.json();
+    res.url = parsed.shortenurl.shorturl;
+  } catch (error) {
+    res.err = true;
+  }
+  return res;
+}
+
+async function announceRQ(from, channel) {
+  const data = await fetchData(RQAPI);
+  if (data.error)
+    client.say(
+      channel,
+      `Error occurred, ${from}.  Try this instead: "[[CAT:REV]]"`
+    );
+  else {
+    const { list } = data;
+    if (!list.length) client.say(channel, `Review queue is empty, ${from}.`);
+    else {
+      client.say(
+        channel,
+        `${list.length} articles to review, ${from}.  They are:`
+      );
+      const urls = list.map(({ title }) => {
+        const fmtTitle = title.replace(/ /g, '%20');
+        return `${URL}${fmtTitle}`;
+      });
+      const shortUrls = await Promise.all(urls.map(urlShortener));
+      shortUrls.forEach(({ url }) => {
+        client.say(channel, url);
+      });
+    }
+  }
+}
+
 function groupChat(from, to, msg) {
-  if (msg.toLowerCase().includes(`thanks ${botName}`))
+  const lcMsg = msg.toLowerCase();
+  if (lcMsg.includes(`thanks ${botName}`))
     client.say(to, `You are welcome, ${from}.`);
+  if (msg.includes(`${botName} /RQ`)) announceRQ(from, to);
   const regex1 = /\[{2}(.*?)\]{2}/g;
   const regex2 = /\{{2}(.*?)\}{2}/g;
   const links = msg.match(regex1);
@@ -65,4 +125,3 @@ function groupChat(from, to, msg) {
 client.addListener('error', err);
 client.addListener('pm', pm);
 client.addListener('message', groupChat);
-// channels.forEach(client.join);
