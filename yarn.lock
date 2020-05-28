@@ -40,3 +40,8 @@ node-icu-charset-detector@~0.2.0:
   integrity sha1-wjINo3Tdy2cfxUy0oOBB4Vb/1jk=
   dependencies:
     nan "^2.3.3"
+
+tinyurl@^1.1.5:
+  version "1.1.5"
+  resolved "https://registry.yarnpkg.com/tinyurl/-/tinyurl-1.1.5.tgz#b0e7b06e7d3dc578bc8c217880822d95d3817aa4"
+  integrity sha512-Wy/y0nrP5nvK66R8sWSGyRYzqlwZpGVkaNKLNjQbnWQ1bkkksZQb3zVrTOlLVaJKwiLUjt/Nujz1hjEMci0j2A==

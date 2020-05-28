@@ -1,5 +1,6 @@
 const fetch = require('node-fetch');
 const { shortURL, URL } = require('./config');
+const TUrl = require('tinyurl');
 
 async function fetchData(URI) {
   const res = {};
@@ -9,6 +10,7 @@ async function fetchData(URI) {
     res.list = parsed.query.categorymembers;
   } catch (error) {
     res.error = true;
+    console.warn('Error in fetchData:', error);
   }
   return res;
 }
@@ -39,7 +41,7 @@ function getFullTemplate(template) {
   return `${URL}Template:${word}`;
 }
 
-async function urlShortener(URI) {
+async function urlShortener1(URI) {
   const req = `${shortURL}${URI}`;
   const res = {};
   try {
@@ -51,6 +53,18 @@ async function urlShortener(URI) {
     res.url = parsed.shortenurl.shorturl;
   } catch (error) {
     res.err = true;
+    console.warn('Error in urlShortener1:', error);
+  }
+  return res;
+}
+
+async function urlShortener(URI) {
+  const res = {};
+  try {
+    res.url = await TUrl.shorten(URI);
+  } catch (error) {
+    res.err = true;
+    console.warn('Error in urlShortener:', error);
   }
   return res;
 }

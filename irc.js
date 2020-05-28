@@ -60,8 +60,8 @@ async function announceRQ(sender, channel) {
 
 async function sayShortUrls(urlList, channel) {
   const shortUrls = await Promise.all(urlList.map(urlShortener));
-  shortUrls.forEach(({ url }) => {
-    client.say(channel, url);
+  shortUrls.forEach(({ url, err }) => {
+    if (!err) client.say(channel, url);
   });
 }
 
