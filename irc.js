@@ -75,12 +75,14 @@ function groupChat(sender, channel, msg) {
   const links = msg.match(regex1);
   const templates = msg.match(regex2);
   if (links) {
-    const fullLinks = links.map(getFullLink);
-    sayShortUrls(fullLinks, channel);
+    const nonEmptyLink = links.filter((el) => el.length > 4);
+    const fullLinks = nonEmptyLink.map(getFullLink);
+    if (fullLinks.length) sayShortUrls(fullLinks, channel);
   }
   if (!msg.endsWith('--nl') && templates) {
-    const fullLinks = templates.map(getFullTemplate);
-    sayShortUrls(fullLinks, channel);
+    const nonEmptyTl = templates.filter((el) => el.length > 4);
+    const fullLinks = nonEmptyTl.map(getFullTemplate);
+    if (fullLinks.length) sayShortUrls(fullLinks, channel);
   }
 }
 
