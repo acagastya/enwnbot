@@ -45,12 +45,17 @@ async function urlShortener(URI, bot) {
   const req = `${shortURL}${URI}`;
   const res = {};
   try {
-    const data = await bot.request({
+    const data = await bot.rawRequest({
       action: 'shortenurl',
       format: 'json',
-      url: req,
+      uri: req,
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
     });
-    res.url = data.shortenurl.shorturl;
+    const parsed = JSON.parse(data);
+    res.url = parsed.shortenurl.shorturl;
   } catch (error) {
     res.err = true;
     console.warn('Error in urlShortener:', error);
