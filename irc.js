@@ -1,5 +1,4 @@
 const irc = require('irc');
-const MWBot = require('mwbot');
 
 const {
   admins,
@@ -21,30 +20,11 @@ const {
   urlShortener1,
 } = require('./utils');
 
+const { fallback, reset, short } = require('./promUrlShortener');
+
 const client = new irc.Client(server, botName, {
   channels,
 });
-
-let bot = new MWBot();
-const globalErr = {};
-(async function () {
-  try {
-    await bot.login({
-      username: 'Enwnbot',
-      password: botPass,
-      apiUrl: 'https://meta.wikimedia.org/w/api.php',
-    });
-    console.log('Ready to receive inputs...');
-    channels.forEach((channel) =>
-      client.say(channel, 'Ready to receive inputs...')
-    );
-  } catch (error) {
-    channels.forEach((channel) =>
-      client.say(channel, 'Error occurred.  Using fallback method.')
-    );
-    globalErr.error = error;
-  }
-})();
 
 function pm(sender, msg) {
   client.say(sender, 'I am a bot.');
@@ -83,12 +63,7 @@ async function announceRQ(sender, channel) {
 }
 
 async function sayShortUrls(urlList, channel) {
-  let shortUrls;
-  if (globalErr.error) {
-    shortUrls = await Promise.all(urlList.map(urlShortener1));
-  } else {
-    shortUrls = await Promise.all(urlList.map((url) => urlShortener(url, bot)));
-  }
+  const shortUrls = await Promise.all(urlList.map(short));
   shortUrls.forEach(({ url, err }) => {
     if (!err) client.say(channel, url);
   });
@@ -98,7 +73,9 @@ function groupChat(sender, channel, msg) {
   const lcMsg = msg.toLowerCase();
   if (lcMsg.includes(`thanks ${botName}`))
     client.say(channel, `You are welcome, ${sender}.`);
-  if (msg.includes(`${botName} /RQ`)) announceRQ(sender, channel);
+  if (msg.includes(`${botName} !RQ`)) announceRQ(sender, channel);
+  if (msg.includes(`${botName} !FB`)) fallback();
+  if (msg.includes(`${botName} !TRY`)) reset();
   const regex1 = /\[{2}(.*?)\]{2}/g;
   const regex2 = /\{{2}(.*?)\}{2}/g;
   const links = msg.match(regex1);

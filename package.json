@@ -1,8 +1,8 @@
 {
   "dependencies": {
     "irc": "^0.5.2",
-    "mwbot": "^1.0.10",
     "node-fetch": "^2.6.0",
+    "request": "^2.88.2",
     "tinyurl": "^1.1.5"
   },
   "scripts": {
