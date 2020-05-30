@@ -1,4 +1,6 @@
 const irc = require('irc');
+const fetch = require('node-fetch');
+const _ = require('underscore');
 
 const {
   admins,
@@ -95,3 +97,26 @@ function groupChat(sender, channel, msg) {
 client.addListener('error', err);
 client.addListener('pm', pm);
 client.addListener('message', groupChat);
+
+const submittedState = {
+  announced: [],
+};
+
+async function announceSubmitted() {
+  const res = await fetch(RQAPI);
+  const parsed = await res.json();
+  const titles = parsed.query.categorymembers.map((el) => el.title);
+  // rm already announced
+  const yetToAnnounce = _.without(titles, ...submittedState.announced);
+  submittedState.announced.push(...yetToAnnounce);
+  const prepped = yetToAnnounce.map(fullUrl);
+  if (prepped.length) {
+    channels.forEach((channel) => client.say(channel, 'Submitted for review:'));
+    channels.forEach((channel) => sayShortUrls(prepped, channel));
+  }
+}
+
+setInterval(announceSubmitted, 5 * 60 * 1000);
+setInterval(() => {
+  submittedState.announced = [];
+}, 6 * 60 * 60 * 1000);

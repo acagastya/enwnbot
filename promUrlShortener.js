@@ -34,6 +34,8 @@ async function getLoginToken() {
   } catch (error) {
     console.log(error);
     res.error = error;
+    globalState.error = true;
+    globalState.fallback = true;
   }
   return res;
 }
@@ -111,6 +113,7 @@ async function main() {
 main();
 
 async function short(URI) {
+  console.log(globalState, botAccount, botPass);
   if (!globalState.mainExecuted) main();
   if (!URI)
     URI =
