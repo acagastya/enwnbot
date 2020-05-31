@@ -64,11 +64,17 @@ async function announceRQ(sender, channel) {
   }
 }
 
-async function sayShortUrls(urlList, channel) {
+async function sayShortUrls(urlList, channel, titles = []) {
   const shortUrls = await Promise.all(urlList.map(short));
-  shortUrls.forEach(({ url, err }) => {
-    if (!err) client.say(channel, url);
-  });
+  if (titles.length == 0) {
+    shortUrls.forEach(({ url, err }) => {
+      if (!err) client.say(channel, url);
+    });
+  } else {
+    shortUrls.forEach(({ url, err }, idx) => {
+      if (!err) client.say(channel, `${url} -- ${titles[idx]}`);
+    });
+  }
 }
 
 function groupChat(sender, channel, msg) {
@@ -112,11 +118,16 @@ async function announceSubmitted() {
   const prepped = yetToAnnounce.map(fullUrl);
   if (prepped.length) {
     channels.forEach((channel) => client.say(channel, 'Submitted for review:'));
-    channels.forEach((channel) => sayShortUrls(prepped, channel));
+    channels.forEach((channel) =>
+      sayShortUrls(prepped, channel, yetToAnnounce)
+    );
   }
 }
 
-setInterval(announceSubmitted, 5 * 60 * 1000);
+const submittedPeriod = 5 * 60 * 1000;
+const cacheClearPeriod = 6 * 60 * 60 * 1000;
+
+setInterval(announceSubmitted, submittedPeriod);
 setInterval(() => {
   submittedState.announced = [];
-}, 6 * 60 * 60 * 1000);
+}, cacheClearPeriod);
