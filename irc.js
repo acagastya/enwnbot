@@ -57,9 +57,10 @@ async function announceRQ(sender, channel) {
         channel,
         `${list.length} articles to review, ${sender}.  They are:`
       );
-      const urls = list.map(({ title }) => fullUrl(title));
+      const titles = list.map(({ title }) => title);
+      const urls = titles.map(fullUrl);
       client.say(channel, '(Hold on a sec...  Shortening the URLs.)');
-      sayShortUrls(urls, channel);
+      sayShortUrls(urls, channel, titles);
     }
   }
 }
