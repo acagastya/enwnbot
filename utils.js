@@ -45,10 +45,13 @@ function getFullTemplate(template) {
 
 function sayTime(msg, client, channel) {
   const user = msg.split(' ').filter(Boolean)[2];
-  const timezone = timezones.get(user) || 'UTC';
+  const timezone = timezones.get(user) || user;
   let time;
-  time = moment().tz(timezone).format('HH:mm MMM DD');
-  if (timezone == 'UTC') time += ' UTC';
+  try {
+    time = moment().tz(timezone).format('HH:mm MMM DD');
+  } catch (error) {
+    time = moment().tz('UTC').format('HH:mm MMM DD') + ' UTC';
+  }
   client.say(channel, time);
 }
 
