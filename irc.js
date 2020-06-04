@@ -10,6 +10,7 @@ const {
   report,
   RQAPI,
   server,
+  URAPI,
 } = require('./config');
 
 const { fetchData, fullUrl, getFullLink, getFullTemplate } = require('./utils');
@@ -58,7 +59,13 @@ async function announceRQ(sender, channel) {
   }
 }
 
-async function sayShortUrls(urlList, channel, titles = [], times = []) {
+async function sayShortUrls(
+  urlList,
+  channel,
+  titles = [],
+  times = [],
+  pending = []
+) {
   const shortUrls = await Promise.all(urlList.map(short));
 
   shortUrls.forEach(({ url, err }, idx) => {
@@ -66,6 +73,7 @@ async function sayShortUrls(urlList, channel, titles = [], times = []) {
       let msg = `${url} sumbitted for review`;
       if (times.length) msg += ` *${times[idx]}*`;
       if (titles.length) msg += ` -- ${titles[idx]}`;
+      if (pending[idx]) msg += ' *under review*';
       client.say(channel, msg);
     } else console.log(err);
   });
@@ -106,6 +114,10 @@ async function announceSubmitted() {
   const res = await fetch(RQAPI);
   const parsed = await res.json();
 
+  const underReview = await fetch(URAPI);
+  const urParsed = await underReview.json();
+  const urTitles = urParsed.query.categorymembers.map(({ title }) => title);
+
   const titleTime = parsed.query.categorymembers.map(({ title, timestamp }) => {
     return { timestamp, title };
   });
@@ -113,9 +125,7 @@ async function announceSubmitted() {
   const pending = titleTime.filter(
     ({ title }) => !submittedState.announced.includes(title)
   );
-  // const purgedGlobal = submittedState.announced.filter((el) =>
-  //   allTitles.includes(el)
-  // );
+  const pendingRev = pending.map((el) => urTitles.includes(el.title));
   const titles = pending.map(({ title }) => title);
   submittedState.announced = [...allTitles];
   const urls = titles.map(fullUrl);
@@ -123,7 +133,9 @@ async function announceSubmitted() {
 
   if (urls.length) {
     channels.forEach((channel) => client.say(channel, 'Review Queue:'));
-    channels.forEach((channel) => sayShortUrls(urls, channel, titles, times));
+    channels.forEach((channel) =>
+      sayShortUrls(urls, channel, titles, times, pendingRev)
+    );
   }
 }
 
