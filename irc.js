@@ -1,11 +1,10 @@
 const irc = require('irc');
 const fetch = require('node-fetch');
-const _ = require('underscore');
+const moment = require('moment');
 
 const {
   admins,
   botName,
-  botPass,
   channels,
   maintainers,
   report,
@@ -13,14 +12,7 @@ const {
   server,
 } = require('./config');
 
-const {
-  fetchData,
-  fullUrl,
-  getFullLink,
-  getFullTemplate,
-  urlShortener,
-  urlShortener1,
-} = require('./utils');
+const { fetchData, fullUrl, getFullLink, getFullTemplate } = require('./utils');
 
 const { fallback, reset, short } = require('./promUrlShortener');
 
@@ -58,24 +50,25 @@ async function announceRQ(sender, channel) {
         `${list.length} articles to review, ${sender}.  They are:`
       );
       const titles = list.map(({ title }) => title);
+      const times = list.map(({ timestamp }) => moment().to(moment(timestamp)));
       const urls = titles.map(fullUrl);
       client.say(channel, '(Hold on a sec...  Shortening the URLs.)');
-      sayShortUrls(urls, channel, titles);
+      sayShortUrls(urls, channel, titles, times);
     }
   }
 }
 
-async function sayShortUrls(urlList, channel, titles = []) {
+async function sayShortUrls(urlList, channel, titles = [], times = []) {
   const shortUrls = await Promise.all(urlList.map(short));
-  if (titles.length == 0) {
-    shortUrls.forEach(({ url, err }) => {
-      if (!err) client.say(channel, url);
-    });
-  } else {
-    shortUrls.forEach(({ url, err }, idx) => {
-      if (!err) client.say(channel, `${url} -- ${titles[idx]}`);
-    });
-  }
+
+  shortUrls.forEach(({ url, err }, idx) => {
+    if (!err) {
+      let msg = `${url} sumbitted for review`;
+      if (times.length) msg += ` *${times[idx]}*`;
+      if (titles.length) msg += ` -- ${titles[idx]}`;
+      client.say(channel, msg);
+    } else console.log(err);
+  });
 }
 
 function groupChat(sender, channel, msg) {
@@ -112,16 +105,25 @@ const submittedState = {
 async function announceSubmitted() {
   const res = await fetch(RQAPI);
   const parsed = await res.json();
-  const titles = parsed.query.categorymembers.map((el) => el.title);
-  // rm already announced
-  const yetToAnnounce = _.without(titles, ...submittedState.announced);
-  submittedState.announced.push(...yetToAnnounce);
-  const prepped = yetToAnnounce.map(fullUrl);
-  if (prepped.length) {
-    channels.forEach((channel) => client.say(channel, 'Submitted for review:'));
-    channels.forEach((channel) =>
-      sayShortUrls(prepped, channel, yetToAnnounce)
-    );
+
+  const titleTime = parsed.query.categorymembers.map(({ title, timestamp }) => {
+    return { timestamp, title };
+  });
+  const allTitles = parsed.query.categorymembers.map(({ title }) => title);
+  const pending = titleTime.filter(
+    ({ title }) => !submittedState.announced.includes(title)
+  );
+  // const purgedGlobal = submittedState.announced.filter((el) =>
+  //   allTitles.includes(el)
+  // );
+  const titles = pending.map(({ title }) => title);
+  submittedState.announced = [...allTitles];
+  const urls = titles.map(fullUrl);
+  const times = pending.map(({ timestamp }) => moment().to(moment(timestamp)));
+
+  if (urls.length) {
+    channels.forEach((channel) => client.say(channel, 'Review Queue:'));
+    channels.forEach((channel) => sayShortUrls(urls, channel, titles, times));
   }
 }
 

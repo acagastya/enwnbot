@@ -7,7 +7,7 @@ const config = {
   maintainers: ['ssmith'],
   report: '!ADMIN',
   RQAPI:
-    'https://en.wikinews.org/w/api.php?action=query&list=categorymembers&cmtitle=Category:Review&format=json',
+    'https://en.wikinews.org/w/api.php?action=query&list=categorymembers&cmtitle=Category:Review&format=json&cmsort=timestamp&cmprop=timestamp|ids|title',
   server: 'irc.freenode.net',
   shortURL:
     'https://meta.wikimedia.org/w/api.php?action=shortenurl&format=json&url=',

@@ -41,44 +41,9 @@ function getFullTemplate(template) {
   return `${URL}Template:${word}`;
 }
 
-async function urlShortener(URI, bot) {
-  const req = `${shortURL}${URI}`;
-  const res = {};
-  try {
-    const data = await bot.rawRequest({
-      action: 'shortenurl',
-      format: 'json',
-      uri: req,
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-    });
-    const parsed = JSON.parse(data);
-    res.url = parsed.shortenurl.shorturl;
-  } catch (error) {
-    res.err = true;
-    console.warn('Error in urlShortener:', error);
-  }
-  return res;
-}
-
-async function urlShortener1(URI) {
-  const res = {};
-  try {
-    res.url = await TUrl.shorten(URI);
-  } catch (error) {
-    res.err = true;
-    console.warn('Error in urlShortener:', error);
-  }
-  return res;
-}
-
 module.exports = {
   fetchData,
   fullUrl,
   getFullLink,
   getFullTemplate,
-  urlShortener,
-  urlShortener1,
 };

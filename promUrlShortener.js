@@ -131,10 +131,13 @@ async function short(URI) {
       });
       const { body } = data;
       const parsed = JSON.parse(body);
+      if (parsed.error) throw new Error('Rate limit');
       res.url = parsed.shortenurl.shorturl;
     } catch (error) {
+      globalState.useFallback = true;
       globalState.error = error;
       res.error = error;
+      res.url = await TUrl.shorten(URI);
     }
   } else {
     try {
