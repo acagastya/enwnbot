@@ -60,12 +60,13 @@ async function announceRQ(sender, channel) {
       const times = list.map(({ timestamp }) => moment().to(moment(timestamp)));
       const urls = titles.map(fullUrl);
       client.say(channel, '(Hold on a sec...  Shortening the URLs.)');
-      sayShortUrls(urls, channel, titles, times);
+      sayShortUrls(true, urls, channel, titles, times);
     }
   }
 }
 
 async function sayShortUrls(
+  review = false,
   urlList,
   channel,
   titles = [],
@@ -76,7 +77,8 @@ async function sayShortUrls(
 
   shortUrls.forEach(({ url, err }, idx) => {
     if (!err) {
-      let msg = `${url} sumbitted for review`;
+      let msg = url;
+      if (review) msg += ' sumbitted for review';
       if (times.length) msg += ` *${times[idx]}*`;
       if (titles.length) msg += ` -- ${titles[idx]}`;
       if (pending[idx]) msg += ' *under review*';
@@ -100,12 +102,12 @@ function groupChat(sender, channel, msg) {
   if (links) {
     const nonEmptyLink = links.filter((el) => el.length > 4);
     const fullLinks = nonEmptyLink.map(getFullLink);
-    if (fullLinks.length) sayShortUrls(fullLinks, channel);
+    if (fullLinks.length) sayShortUrls(false, fullLinks, channel);
   }
   if (!msg.endsWith('--nl') && templates) {
     const nonEmptyTl = templates.filter((el) => el.length > 4);
     const fullLinks = nonEmptyTl.map(getFullTemplate);
-    if (fullLinks.length) sayShortUrls(fullLinks, channel);
+    if (fullLinks.length) sayShortUrls(false, fullLinks, channel);
   }
 }
 
@@ -141,7 +143,7 @@ async function announceSubmitted() {
   if (urls.length) {
     channels.forEach((channel) => client.say(channel, 'Review Queue:'));
     channels.forEach((channel) =>
-      sayShortUrls(urls, channel, titles, times, pendingRev)
+      sayShortUrls(true, urls, channel, titles, times, pendingRev)
     );
   }
 }
