@@ -1,6 +1,8 @@
 const fetch = require('node-fetch');
 const { shortURL, URL } = require('./config');
 const TUrl = require('tinyurl');
+const moment = require('moment-timezone');
+const timezones = require('./time');
 
 async function fetchData(URI) {
   const res = {};
@@ -41,9 +43,19 @@ function getFullTemplate(template) {
   return `${URL}Template:${word}`;
 }
 
+function sayTime(msg, client, channel) {
+  const user = msg.split(' ').filter(Boolean)[2];
+  const timezone = timezones.get(user) || 'UTC';
+  let time;
+  time = moment().tz(timezone).format('HH:mm MMM DD');
+  if (timezone == 'UTC') time += ' UTC';
+  client.say(channel, time);
+}
+
 module.exports = {
   fetchData,
   fullUrl,
   getFullLink,
   getFullTemplate,
+  sayTime,
 };

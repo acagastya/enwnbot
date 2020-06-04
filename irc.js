@@ -1,6 +1,6 @@
 const irc = require('irc');
 const fetch = require('node-fetch');
-const moment = require('moment');
+const moment = require('moment-timezone');
 
 const {
   admins,
@@ -13,7 +13,13 @@ const {
   URAPI,
 } = require('./config');
 
-const { fetchData, fullUrl, getFullLink, getFullTemplate } = require('./utils');
+const {
+  fetchData,
+  fullUrl,
+  getFullLink,
+  getFullTemplate,
+  sayTime,
+} = require('./utils');
 
 const { fallback, reset, short } = require('./promUrlShortener');
 
@@ -86,6 +92,7 @@ function groupChat(sender, channel, msg) {
   if (msg.includes(`${botName} !RQ`)) announceRQ(sender, channel);
   if (msg.includes(`${botName} !FB`)) fallback();
   if (msg.includes(`${botName} !TRY`)) reset();
+  if (msg.includes(`${botName} !time`)) sayTime(msg, client, channel);
   const regex1 = /\[{2}(.*?)\]{2}/g;
   const regex2 = /\{{2}(.*?)\}{2}/g;
   const links = msg.match(regex1);
