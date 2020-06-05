@@ -44,13 +44,15 @@ function getFullTemplate(template) {
 }
 
 function sayTime(msg, client, channel) {
-  const user = msg.split(' ').filter(Boolean)[2];
+  let arr = msg.split(' ').filter(Boolean);
+  while (arr[1] != '!time') arr.shift();
+  const user = arr[2];
   const timezone = timezones.get(user) || user;
   let time;
   try {
     time = moment().tz(timezone).format('HH:mm MMM DD');
   } catch (error) {
-    time = moment().tz('UTC').format('HH:mm MMM DD') + ' UTC';
+    time = `${moment().tz('UTC').format('HH:mm MMM DD')} UTC`;
   }
   client.say(channel, time);
 }
