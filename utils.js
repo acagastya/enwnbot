@@ -48,12 +48,9 @@ function sayTime(msg, client, channel) {
   while (arr[1] != '!time') arr.shift();
   const user = arr[2];
   const timezone = timezones.get(user) || user;
-  let time;
-  try {
-    time = moment().tz(timezone).format('HH:mm MMM DD');
-  } catch (error) {
-    time = `${moment().tz('UTC').format('HH:mm MMM DD')} UTC`;
-  }
+  const TZ = moment.tz.names().includes(timezone) ? timezone : 'UTC';
+  let time = moment().tz(timezone).format('HH:mm MMM DD');
+  if (TZ == 'UTC') time += ' UTC';
   client.say(channel, time);
 }
 
