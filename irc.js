@@ -88,9 +88,8 @@ async function sayShortUrls(
 }
 
 function groupChat(sender, channel, msg) {
-  const lcMsg = msg.toLowerCase();
-  if (lcMsg.includes(`thanks ${botName}`))
-    client.say(channel, `You are welcome, ${sender}.`);
+  const thanksRegex = new RegExp(`thanks,? ${botName}`, 'i');
+  if (thanksRegex.test(msg)) client.say(channel, `You are welcome, ${sender}.`);
   if (msg.includes(`${botName} !RQ`)) announceRQ(sender, channel);
   if (msg.includes(`${botName} !FB`)) fallback();
   if (msg.includes(`${botName} !TRY`)) reset();

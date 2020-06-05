@@ -113,7 +113,6 @@ async function main() {
 main();
 
 async function short(URI) {
-  console.log(globalState);
   if (!globalState.mainExecuted) main();
   if (!URI)
     URI =
