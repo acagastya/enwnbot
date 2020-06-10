@@ -64,6 +64,30 @@ async function announceRQ(sender, channel) {
     }
   }
 }
+async function announceUR(sender, channel) {
+  const data = await fetchData(URAPI);
+  if (data.error)
+    client.say(
+      channel,
+      `Error occurred, ${sender}.  Try this instead: "[[CAT:Under Review]]"`
+    );
+  else {
+    const { list } = data;
+    if (!list.length)
+      client.say(channel, `No articles are under review, ${sender}.`);
+    else {
+      client.say(
+        channel,
+        `${list.length} articles are under review, ${sender}.  They are:`
+      );
+      const titles = list.map(({ title }) => title);
+      const times = list.map(({ timestamp }) => moment().to(moment(timestamp)));
+      const urls = titles.map(fullUrl);
+      client.say(channel, '(Hold on a sec...  Shortening the URLs.)');
+      sayShortUrls(true, urls, channel, titles, times);
+    }
+  }
+}
 
 async function sayShortUrls(
   review = false,
@@ -91,6 +115,7 @@ function groupChat(sender, channel, msg) {
   const thanksRegex = new RegExp(`thanks,? ${botName}`, 'i');
   if (thanksRegex.test(msg)) client.say(channel, `You are welcome, ${sender}.`);
   if (msg.includes(`${botName} !RQ`)) announceRQ(sender, channel);
+  if (msg.includes(`${botName} !UR`)) announceUR(sender, channel);
   if (msg.includes(`${botName} !FB`)) fallback();
   if (msg.includes(`${botName} !TRY`)) reset();
   if (msg.includes(`${botName} !time`)) sayTime(msg, client, channel);
