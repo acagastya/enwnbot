@@ -13,7 +13,7 @@ const config = {
     'https://meta.wikimedia.org/w/api.php?action=shortenurl&format=json&url=',
   URL: 'https://en.wikinews.org/w/index.php?title=',
   URAPI:
-    'https://en.wikinews.org/w/api.php?action=query&list=categorymembers&cmtitle=Category:Under%20review&format=json&cmsort=timestamp&cmprop=title',
+    'https://en.wikinews.org/w/api.php?action=query&list=categorymembers&cmtitle=Category:Under%20review&format=json&cmsort=timestamp&cmprop=title|timestamp',
 };
 
 module.exports = config;
