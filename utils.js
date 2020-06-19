@@ -1,5 +1,5 @@
 const fetch = require('node-fetch');
-const { shortURL, URL } = require('./config');
+const { allowedSetters, setterAdmins, URL } = require('./config');
 const TUrl = require('tinyurl');
 const moment = require('moment-timezone');
 const timezones = require('./time');
@@ -54,10 +54,85 @@ function sayTime(msg, client, channel) {
   client.say(channel, time);
 }
 
+const chatSetter = {};
+
+function setthis(sender, channel, msg, client) {
+  if (!allowedSetters.includes(sender)) {
+    client.say(channel, `You are not permitted to access this, ${sender}.`);
+    return;
+  }
+  let arr = msg.split(' ').filter(Boolean);
+  while (arr[1] != '!SET') arr.shift();
+  const action = arr[2];
+  switch (action) {
+    case 'help': {
+      client.say(
+        channel,
+        `${sender}: These are the commands you can use: add, get, keys, rmv, clr, mt(?).`
+      );
+      break;
+    }
+    case 'add': {
+      if (chatSetter[channel] == undefined) chatSetter[channel] = {};
+      if (chatSetter[channel][sender] == undefined)
+        chatSetter[channel][sender] = new Map();
+      const val = arr.slice(4).join(' ');
+      chatSetter[channel][sender].set(arr[3], val);
+      client.say(channel, `Added, ${sender}.`);
+      break;
+    }
+    case 'get': {
+      if (chatSetter[channel] == undefined) chatSetter[channel] = {};
+      if (chatSetter[channel][sender] == undefined)
+        chatSetter[channel][sender] = new Map();
+      const val = chatSetter[channel][sender].get(arr[3]);
+      client.say(channel, `${sender}: ${val}`);
+      break;
+    }
+    case 'keys': {
+      if (chatSetter[channel] == undefined) chatSetter[channel] = {};
+      if (chatSetter[channel][sender] == undefined)
+        chatSetter[channel][sender] = new Map();
+      const keys = [];
+      for (let key of chatSetter[channel][sender].keys()) keys.push(key);
+      client.say(channel, `${sender}: ${keys.join(', ')}`);
+      break;
+    }
+    case 'rmv': {
+      if (chatSetter[channel] == undefined) chatSetter[channel] = {};
+      if (chatSetter[channel][sender] == undefined)
+        chatSetter[channel][sender] = new Map();
+      chatSetter[channel][sender].delete(arr[3]);
+      client.say(channel, `${sender}: removed`);
+      break;
+    }
+    case 'clr': {
+      if (chatSetter[channel] == undefined) chatSetter[channel] = {};
+      chatSetter[channel][sender].clear();
+      client.say(channel, `${sender}: deleted all sets.`);
+      break;
+    }
+    case 'mt': {
+      if (!setterAdmins.includes(sender) || !chatSetter[channel]) {
+        break;
+      }
+      Object.keys(chatSetter[channel]).forEach((name) =>
+        chatSetter[channel][name].clear()
+      );
+      client.say(channel, `Cleared all sets for everyone, ${sender}.`);
+      break;
+    }
+    default: {
+      client.say(channel, `Action: ${action} not found, ${sender}.`);
+    }
+  }
+}
+
 module.exports = {
   fetchData,
   fullUrl,
   getFullLink,
   getFullTemplate,
   sayTime,
+  setthis,
 };

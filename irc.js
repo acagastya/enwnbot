@@ -19,6 +19,7 @@ const {
   getFullLink,
   getFullTemplate,
   sayTime,
+  setthis,
 } = require('./utils');
 
 const { fallback, reset, short } = require('./promUrlShortener');
@@ -118,6 +119,7 @@ function groupChat(sender, channel, msg) {
   if (msg.includes(`${botName} !UR`)) announceUR(sender, channel);
   if (msg.includes(`${botName} !FB`)) fallback();
   if (msg.includes(`${botName} !TRY`)) reset();
+  if (msg.includes(`${botName} !SET`)) setthis(sender, channel, msg, client);
   if (msg.includes(`${botName} !time`)) sayTime(msg, client, channel);
   const regex1 = /\[{2}(.*?)\]{2}/g;
   const regex2 = /\{{2}(.*?)\}{2}/g;
