@@ -13,7 +13,7 @@ const config = {
   server: 'irc.freenode.net',
   shortURL:
     'https://meta.wikimedia.org/w/api.php?action=shortenurl&format=json&url=',
-  URL: 'https://en.wikinews.org/w/index.php?title=',
+  URL: 'https://en.wikinews.org/wiki/',
   URAPI:
     'https://en.wikinews.org/w/api.php?action=query&list=categorymembers&cmtitle=Category:Under%20review&format=json&cmsort=timestamp&cmprop=title|timestamp',
 };
