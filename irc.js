@@ -57,7 +57,7 @@ async function announceRQ(sender, channel) {
         channel,
         `${list.length} articles to review, ${sender}.  They are:`
       );
-      const titles = list.map(({ title }) => title.replace(/\?/g, "%3F"));
+      const titles = list.map(({ title }) => title);
       const times = list.map(({ timestamp }) => moment().to(moment(timestamp)));
       const urls = titles.map(fullUrl);
       client.say(channel, "(Hold on a sec...  Shortening the URLs.)");
@@ -81,7 +81,7 @@ async function announceUR(sender, channel) {
         channel,
         `${list.length} articles are under review, ${sender}.  They are:`
       );
-      const titles = list.map(({ title }) => title.replace(/\?/g, "%3F"));
+      const titles = list.map(({ title }) => title);
       const times = list.map(({ timestamp }) => moment().to(moment(timestamp)));
       const urls = titles.map(fullUrl);
       client.say(channel, "(Hold on a sec...  Shortening the URLs.)");
@@ -151,17 +151,12 @@ async function announceSubmitted() {
 
   const underReview = await fetch(URAPI);
   const urParsed = await underReview.json();
-  const urTitles = urParsed.query.categorymembers.map(({ title }) =>
-    title.replace(/\?/g, "%3F")
-  );
+  const urTitles = urParsed.query.categorymembers.map(({ title }) => title);
 
   const titleTime = parsed.query.categorymembers.map(({ title, timestamp }) => {
-    title = title.replace(/\?/g, "%3F");
     return { timestamp, title };
   });
-  const allTitles = parsed.query.categorymembers.map(({ title }) =>
-    title.replace(/\?/g, "%3F")
-  );
+  const allTitles = parsed.query.categorymembers.map(({ title }) => title);
   const pending = titleTime.filter(
     ({ title }) => !submittedState.announced.includes(title)
   );

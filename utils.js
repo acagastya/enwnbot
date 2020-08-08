@@ -18,6 +18,7 @@ async function fetchData(URI) {
 }
 
 function fullUrl(title) {
+  title = title.replace(/\?/g, "%3F");
   let [main, anchor] = title.split("#");
   main = main.replace(/ /g, "%20");
   if (anchor) anchor = anchor.replace(/ /g, "_");
