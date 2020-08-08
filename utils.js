@@ -1,8 +1,8 @@
-const fetch = require('node-fetch');
-const { allowedSetters, setterAdmins, URL } = require('./config');
-const TUrl = require('tinyurl');
-const moment = require('moment-timezone');
-const timezones = require('./time');
+const fetch = require("node-fetch");
+const { allowedSetters, setterAdmins, URL } = require("./config");
+const TUrl = require("tinyurl");
+const moment = require("moment-timezone");
+const timezones = require("./time");
 
 async function fetchData(URI) {
   const res = {};
@@ -12,15 +12,15 @@ async function fetchData(URI) {
     res.list = parsed.query.categorymembers;
   } catch (error) {
     res.error = true;
-    console.warn('Error in fetchData:', error);
+    console.warn("Error in fetchData:", error);
   }
   return res;
 }
 
 function fullUrl(title) {
-  let [main, anchor] = title.split('#');
-  main = main.replace(/ /g, '%20');
-  if (anchor) anchor = anchor.replace(/ /g, '_');
+  let [main, anchor] = title.split("#");
+  main = main.replace(/ /g, "%20");
+  if (anchor) anchor = anchor.replace(/ /g, "_");
   let final;
   if (anchor) final = `${main}%23${anchor}`;
   else final = main;
@@ -29,7 +29,7 @@ function fullUrl(title) {
 
 function getFullLink(link) {
   const len = link.length;
-  const trimmed = link.substr(2, len - 4);
+  const trimmed = link.substr(2, len - 4).replace(/\?/g, "%3F");
   const finalUrl = fullUrl(trimmed);
   return finalUrl;
 }
@@ -38,19 +38,22 @@ function getFullTemplate(template) {
   const len = template.length;
   const word = template
     .substr(2, len - 4)
-    .split('|')[0]
-    .replace(/ /g, '%20');
+    .split("|")[0]
+    .replace(/ /g, "%20")
+    .replave(/\?/g, "%3F");
   return `${URL}Template:${word}`;
 }
 
 function sayTime(msg, client, channel) {
-  let arr = msg.split(' ').filter(Boolean);
-  while (arr[1] != '!time') arr.shift();
+  let arr = msg.split(" ").filter(Boolean);
+  while (arr[1] != "!time") arr.shift();
   const user = arr[2];
   const timezone = timezones.get(user) || user;
-  const TZ = moment.tz.names().includes(timezone) ? timezone : 'UTC';
-  let time = moment().tz(timezone).format('HH:mm MMM DD');
-  if (TZ == 'UTC') time += ' UTC';
+  const TZ = moment.tz.names().includes(timezone) ? timezone : "UTC";
+  let time = moment()
+    .tz(timezone)
+    .format("HH:mm MMM DD");
+  if (TZ == "UTC") time += " UTC";
   client.say(channel, time);
 }
 
@@ -61,27 +64,27 @@ function setthis(sender, channel, msg, client) {
     client.say(channel, `You are not permitted to access this, ${sender}.`);
     return;
   }
-  let arr = msg.split(' ').filter(Boolean);
-  while (arr[1] != '!SET') arr.shift();
+  let arr = msg.split(" ").filter(Boolean);
+  while (arr[1] != "!SET") arr.shift();
   const action = arr[2];
   switch (action) {
-    case 'help': {
+    case "help": {
       client.say(
         channel,
         `${sender}: These are the commands you can use: add, get, keys, rmv, clr, mt(?).`
       );
       break;
     }
-    case 'add': {
+    case "add": {
       if (chatSetter[channel] == undefined) chatSetter[channel] = {};
       if (chatSetter[channel][sender] == undefined)
         chatSetter[channel][sender] = new Map();
-      const val = arr.slice(4).join(' ');
+      const val = arr.slice(4).join(" ");
       chatSetter[channel][sender].set(arr[3], val);
       client.say(channel, `Added, ${sender}.`);
       break;
     }
-    case 'get': {
+    case "get": {
       if (chatSetter[channel] == undefined) chatSetter[channel] = {};
       if (chatSetter[channel][sender] == undefined)
         chatSetter[channel][sender] = new Map();
@@ -89,16 +92,16 @@ function setthis(sender, channel, msg, client) {
       client.say(channel, `${sender}: ${val}`);
       break;
     }
-    case 'keys': {
+    case "keys": {
       if (chatSetter[channel] == undefined) chatSetter[channel] = {};
       if (chatSetter[channel][sender] == undefined)
         chatSetter[channel][sender] = new Map();
       const keys = [];
       for (let key of chatSetter[channel][sender].keys()) keys.push(key);
-      client.say(channel, `${sender}: ${keys.join(', ')}`);
+      client.say(channel, `${sender}: ${keys.join(", ")}`);
       break;
     }
-    case 'rmv': {
+    case "rmv": {
       if (chatSetter[channel] == undefined) chatSetter[channel] = {};
       if (chatSetter[channel][sender] == undefined)
         chatSetter[channel][sender] = new Map();
@@ -106,17 +109,17 @@ function setthis(sender, channel, msg, client) {
       client.say(channel, `${sender}: removed`);
       break;
     }
-    case 'clr': {
+    case "clr": {
       if (chatSetter[channel] == undefined) chatSetter[channel] = {};
       chatSetter[channel][sender].clear();
       client.say(channel, `${sender}: deleted all sets.`);
       break;
     }
-    case 'mt': {
+    case "mt": {
       if (!setterAdmins.includes(sender) || !chatSetter[channel]) {
         break;
       }
-      Object.keys(chatSetter[channel]).forEach((name) =>
+      Object.keys(chatSetter[channel]).forEach(name =>
         chatSetter[channel][name].clear()
       );
       client.say(channel, `Cleared all sets for everyone, ${sender}.`);
@@ -134,5 +137,5 @@ module.exports = {
   getFullLink,
   getFullTemplate,
   sayTime,
-  setthis,
+  setthis
 };
