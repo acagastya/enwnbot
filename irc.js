@@ -1,6 +1,6 @@
-const irc = require('irc');
-const fetch = require('node-fetch');
-const moment = require('moment-timezone');
+const irc = require("irc");
+const fetch = require("node-fetch");
+const moment = require("moment-timezone");
 
 const {
   admins,
@@ -10,8 +10,8 @@ const {
   report,
   RQAPI,
   server,
-  URAPI,
-} = require('./config');
+  URAPI
+} = require("./config");
 
 const {
   fetchData,
@@ -19,25 +19,25 @@ const {
   getFullLink,
   getFullTemplate,
   sayTime,
-  setthis,
-} = require('./utils');
+  setthis
+} = require("./utils");
 
-const { fallback, reset, short } = require('./promUrlShortener');
+const { fallback, reset, short } = require("./promUrlShortener");
 
 const client = new irc.Client(server, botName, {
-  channels,
+  channels
 });
 
 function pm(sender, msg) {
-  client.say(sender, 'I am a bot.');
+  client.say(sender, "I am a bot.");
   if (msg.startsWith(report))
-    admins.forEach((admin) =>
+    admins.forEach(admin =>
       client.say(admin, `Message from ${sender}: ${msg}`)
     );
 }
 
 function err(msg) {
-  maintainers.forEach((maintainer) =>
+  maintainers.forEach(maintainer =>
     client.say(maintainer, `Error: ${JSON.stringify(msg)}`)
   );
 }
@@ -57,10 +57,10 @@ async function announceRQ(sender, channel) {
         channel,
         `${list.length} articles to review, ${sender}.  They are:`
       );
-      const titles = list.map(({ title }) => title);
+      const titles = list.map(({ title }) => title.replace(/\?/g, "%3F"));
       const times = list.map(({ timestamp }) => moment().to(moment(timestamp)));
       const urls = titles.map(fullUrl);
-      client.say(channel, '(Hold on a sec...  Shortening the URLs.)');
+      client.say(channel, "(Hold on a sec...  Shortening the URLs.)");
       sayShortUrls(true, urls, channel, titles, times);
     }
   }
@@ -81,10 +81,10 @@ async function announceUR(sender, channel) {
         channel,
         `${list.length} articles are under review, ${sender}.  They are:`
       );
-      const titles = list.map(({ title }) => title);
+      const titles = list.map(({ title }) => title.replace(/\?/g, "%3F"));
       const times = list.map(({ timestamp }) => moment().to(moment(timestamp)));
       const urls = titles.map(fullUrl);
-      client.say(channel, '(Hold on a sec...  Shortening the URLs.)');
+      client.say(channel, "(Hold on a sec...  Shortening the URLs.)");
       sayShortUrls(true, urls, channel, titles, times);
     }
   }
@@ -103,17 +103,17 @@ async function sayShortUrls(
   shortUrls.forEach(({ url, err }, idx) => {
     if (!err) {
       let msg = url;
-      if (review) msg += ' sumbitted for review';
+      if (review) msg += " sumbitted for review";
       if (times.length) msg += ` *${times[idx]}*`;
       if (titles.length) msg += ` -- ${titles[idx]}`;
-      if (pending[idx]) msg += ' *under review*';
+      if (pending[idx]) msg += " *under review*";
       client.say(channel, msg);
     } else console.log(err);
   });
 }
 
 function groupChat(sender, channel, msg) {
-  const thanksRegex = new RegExp(`thanks,? ${botName}`, 'i');
+  const thanksRegex = new RegExp(`thanks,? ${botName}`, "i");
   if (thanksRegex.test(msg)) client.say(channel, `You are welcome, ${sender}.`);
   if (msg.includes(`${botName} !RQ`)) announceRQ(sender, channel);
   if (msg.includes(`${botName} !UR`)) announceUR(sender, channel);
@@ -126,23 +126,23 @@ function groupChat(sender, channel, msg) {
   const links = msg.match(regex1);
   const templates = msg.match(regex2);
   if (links) {
-    const nonEmptyLink = links.filter((el) => el.length > 4);
+    const nonEmptyLink = links.filter(el => el.length > 4);
     const fullLinks = nonEmptyLink.map(getFullLink);
     if (fullLinks.length) sayShortUrls(false, fullLinks, channel);
   }
-  if (!msg.endsWith('--nl') && templates) {
-    const nonEmptyTl = templates.filter((el) => el.length > 4);
+  if (!msg.endsWith("--nl") && templates) {
+    const nonEmptyTl = templates.filter(el => el.length > 4);
     const fullLinks = nonEmptyTl.map(getFullTemplate);
     if (fullLinks.length) sayShortUrls(false, fullLinks, channel);
   }
 }
 
-client.addListener('error', err);
-client.addListener('pm', pm);
-client.addListener('message', groupChat);
+client.addListener("error", err);
+client.addListener("pm", pm);
+client.addListener("message", groupChat);
 
 const submittedState = {
-  announced: [],
+  announced: []
 };
 
 async function announceSubmitted() {
@@ -151,24 +151,29 @@ async function announceSubmitted() {
 
   const underReview = await fetch(URAPI);
   const urParsed = await underReview.json();
-  const urTitles = urParsed.query.categorymembers.map(({ title }) => title);
+  const urTitles = urParsed.query.categorymembers.map(({ title }) =>
+    title.replace(/\?/g, "%3F")
+  );
 
   const titleTime = parsed.query.categorymembers.map(({ title, timestamp }) => {
+    title = title.replace(/\?/g, "%3F");
     return { timestamp, title };
   });
-  const allTitles = parsed.query.categorymembers.map(({ title }) => title);
+  const allTitles = parsed.query.categorymembers.map(({ title }) =>
+    title.replace(/\?/g, "%3F")
+  );
   const pending = titleTime.filter(
     ({ title }) => !submittedState.announced.includes(title)
   );
-  const pendingRev = pending.map((el) => urTitles.includes(el.title));
+  const pendingRev = pending.map(el => urTitles.includes(el.title));
   const titles = pending.map(({ title }) => title);
   submittedState.announced = [...allTitles];
   const urls = titles.map(fullUrl);
   const times = pending.map(({ timestamp }) => moment().to(moment(timestamp)));
 
   if (urls.length) {
-    channels.forEach((channel) => client.say(channel, 'Review Queue:'));
-    channels.forEach((channel) =>
+    channels.forEach(channel => client.say(channel, "Review Queue:"));
+    channels.forEach(channel =>
       sayShortUrls(true, urls, channel, titles, times, pendingRev)
     );
   }
