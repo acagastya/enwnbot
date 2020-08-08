@@ -18,8 +18,8 @@ async function fetchData(URI) {
 }
 
 function fullUrl(title) {
-  title = title.replace(/\?/g, "%3F");
-  let [main, anchor] = title.split("#");
+  fixedTitle = title.replace(/\?/g, "%3F");
+  let [main, anchor] = fixedTitle.split("#");
   main = main.replace(/ /g, "%20");
   if (anchor) anchor = anchor.replace(/ /g, "_");
   let final;
@@ -30,7 +30,7 @@ function fullUrl(title) {
 
 function getFullLink(link) {
   const len = link.length;
-  const trimmed = link.substr(2, len - 4).replace(/\?/g, "%3F");
+  const trimmed = link.substr(2, len - 4);
   const finalUrl = fullUrl(trimmed);
   return finalUrl;
 }
