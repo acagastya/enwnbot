@@ -103,7 +103,7 @@ async function sayShortUrls(
   shortUrls.forEach(({ url, err }, idx) => {
     if (!err) {
       let msg = url;
-      if (review) msg += " sumbitted for review";
+      if (review) msg += " submitted for review";
       if (times.length) msg += ` *${times[idx]}*`;
       if (titles.length) msg += ` -- ${titles[idx]}`;
       if (pending[idx]) msg += " *under review*";
