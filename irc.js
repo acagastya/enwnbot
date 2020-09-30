@@ -34,6 +34,9 @@ function pm(sender, msg) {
     admins.forEach(admin =>
       client.say(admin, `Message from ${sender}: ${msg}`)
     );
+   if(msg != 'KILL')  return;                                                    
+  if(['pizero', 'pizero|afk', 'acagastya'].indexOf(from) < 0)  return;
+   process.abort();                                                              
 }
 
 function err(msg) {
